@@ -28,29 +28,16 @@ buffer_size = tf.data.AUTOTUNE
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--access_id", dest="access_id", type=str)
-    parser.add_argument(
-        "--access_key", dest="access_key", type=str)
-    parser.add_argument(
-        "--max_length", dest="max_len", type=int, default=64)    
-    parser.add_argument(
-        "--batch_size", dest="batch_size", type=int, default=32)
-    parser.add_argument(
-        "--epochs", dest="epochs", type=int, default=20)
-    parser.add_argument(
-        "--lr", dest='lr', type=float, default=1e-5)
-    parser.add_argument(
-        "--splits", dest='splits', type=int, default=5)
-    parser.add_argument(
-        "--pretrained_QA", dest='pretrained_QA', type=str, 
-        default='bert-base-uncased')
-    parser.add_argument(
-        "--pretrained_PO", dest='pretrained_PO', type=str, 
-        default='distilroberta-base')   
-    parser.add_argument(
-        "--bucket_name", dest="bucket_name", type=str, 
-        default="syalabi-bucket")
+    parser.add_argument("--access_id", dest="access_id", type=str)
+    parser.add_argument("--access_key", dest="access_key", type=str)
+    parser.add_argument("--max_length", dest="max_len", type=int, default=64)    
+    parser.add_argument("--batch_size", dest="batch_size", type=int, default=32)
+    parser.add_argument("--epochs", dest="epochs", type=int, default=20)
+    parser.add_argument("--lr", dest='lr', type=float, default=1e-5)
+    parser.add_argument("--splits", dest='splits', type=int, default=5)
+    parser.add_argument("--pretrained_QA", dest='pretrained_QA', type=str, default='bert-base-uncased')
+    parser.add_argument("--pretrained_PO", dest='pretrained_PO', type=str, default='distilroberta-base')   
+    parser.add_argument("--bucket_name", dest="bucket_name", type=str, default="syalabi-bucket")
 
     args, _ = parser.parse_known_args()
 
