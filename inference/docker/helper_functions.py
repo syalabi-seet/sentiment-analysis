@@ -91,36 +91,31 @@ def PhraseDecoder(input_ids, prediction, tokenizer):
     return selected_text
 
 
-def get_outputs(texts, polarity_tokenizer, phrase_tokenizer, polarity_model, phrase_model, POmax_len, QAmax_len):
-    sentiments = []
-    selected_texts = []
-    for text in texts:
-        polarity_inputs = PolarityTokenizer(
-            text=text,
-            tokenizer=polarity_tokenizer,
-            max_length=POmax_len)
-        polarity_preds = polarity_model.predict(polarity_inputs)
-        polarity_preds = np.argmax(polarity_preds, axis=1)
-        if polarity_preds == 0:
-            sentiment = 'negative'
-        elif polarity_preds == 1:
-            sentiment = 'neutral'
-        else:
-            sentiment = 'positive'            
-        phrase_inputs = PhraseTokenizer(
-            text=text,
-            sentiment=sentiment,
-            tokenizer=phrase_tokenizer,
-            max_length=QAmax_len)
-        phrase_ids = phrase_inputs[0][0]
-        phrase_preds = phrase_model.predict(phrase_inputs)
-        selected_text = PhraseDecoder(
-            input_ids=phrase_ids, 
-            prediction=phrase_preds, 
-            tokenizer=phrase_tokenizer)
-        sentiments.append(sentiment)
-        selected_texts.append(selected_text)
-    return sentiments, selected_texts
+def get_outputs(text, polarity_tokenizer, phrase_tokenizer, polarity_model, phrase_model, POmax_len, QAmax_len):
+    polarity_inputs = PolarityTokenizer(
+        text=text,
+        tokenizer=polarity_tokenizer,
+        max_length=POmax_len)
+    polarity_preds = polarity_model.predict(polarity_inputs)
+    polarity_preds = np.argmax(polarity_preds, axis=1)
+    if polarity_preds == 0:
+        sentiment = 'negative'
+    elif polarity_preds == 1:
+        sentiment = 'neutral'
+    else:
+        sentiment = 'positive'            
+    phrase_inputs = PhraseTokenizer(
+        text=text,
+        sentiment=sentiment,
+        tokenizer=phrase_tokenizer,
+        max_length=QAmax_len)
+    phrase_ids = phrase_inputs[0][0]
+    phrase_preds = phrase_model.predict(phrase_inputs)
+    selected_text = PhraseDecoder(
+        input_ids=phrase_ids, 
+        prediction=phrase_preds, 
+        tokenizer=phrase_tokenizer)
+    return sentiment, selected_text
 
 
 def PolarityModel(model_path, max_len, num_classes):

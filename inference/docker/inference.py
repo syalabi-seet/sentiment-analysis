@@ -1,5 +1,5 @@
 import os
-import ast
+import time
 import json
 import argparse
 import pandas as pd
@@ -76,43 +76,42 @@ if __name__ == '__main__':
     with connection:
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT user_id, text " \
-                "FROM sentiment_analysis " \
+                "SELECT feedback_id, text " \
+                "FROM feedback " \
                 "WHERE sentiments IS NOT NULL;")
             results = cursor.fetchall()
-        print("INFO -- Input data extracted from sentiment_analysis.")  
+        print("INFO -- Input data extracted from feedback table.")  
 
         # Main loop
-        outputs = {'user_id': [], 'texts': [], 'sentiments': [], 'selected_texts': []}
-        all_sentiments = []
-        all_selected_texts = []
-        for user_id, texts in results:
-            texts = ast.literal_eval(texts)
-            sentiments, selected_texts = get_outputs(
-                texts=texts, 
+        outputs = {'feedback_id': [], 'text': [], 'sentiment': [], 'selected_text': [], 'timestamp': []}
+        for feedback_id, text in results:
+            timestamp = time.strftime('%Y%m%d-%H%M%Shrs')
+            sentiment, selected_text = get_outputs(
+                text=text, 
                 polarity_tokenizer=tokenizer, 
                 phrase_tokenizer=tokenizer,
                 polarity_model=polarity_model, 
                 phrase_model=phrase_model,
                 POmax_len=args.POmax_len,
                 QAmax_len=args.QAmax_len)
-            outputs['user_id'].append(user_id)
-            outputs['texts'].append(texts)
-            outputs['sentiments'].append(sentiments)
-            outputs['selected_texts'].append(selected_texts)
 
+            outputs['feedback_id'].append(feedback_id)
+            outputs['text'].append(text)
+            outputs['sentiment'].append(sentiment)
+            outputs['selected_text'].append(selected_text)
+            outputs['timestamp'].append(timestamp)            
+           
             # Output
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "UPDATE sentiment_analysis " \
-                    "SET sentiments = %s, selected_texts = %s " \
-                    "WHERE user_id = %s;",
-                    (str(sentiments), str(selected_texts), user_id))
+                    "UPDATE feedback " \
+                    "SET sentiment = %s, selected_text = %s , timestamp = %s" \
+                    "WHERE feedback_id = %s;",
+                    (sentiment, selected_text, timestamp, feedback_id))
             
-            connection.commit()
-            print("INFO -- Output updated in sentiment_analysis.")
-
+        connection.commit()
+        print("INFO -- Output updated in feedback table.")
         with open('/opt/ml/processing/output/output.json', 'w') as f:
-            json.dump(outputs, f, indent=4)        
+            json.dump(outputs, f, indent=4)
 
     print("INFO -- Job Completed.")
