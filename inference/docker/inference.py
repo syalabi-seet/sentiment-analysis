@@ -114,7 +114,7 @@ if __name__ == '__main__':
             # Insert outputs into feedback_analysis_response table
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO feedback_analysis_response(feedback_analysis_response_id, sentiment, selected_text, timestamp) " \
+                    "INSERT INTO feedback_analysis_response(feedback_id, sentiment, selected_text, timestamp) " \
                     "VALUES (%s, %s, %s, %s);",
                     (str(feedback_id), sentiment, selected_text, timestamp))
             
