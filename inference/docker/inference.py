@@ -76,16 +76,17 @@ if __name__ == '__main__':
     with connection:
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT feedback_id, text " \
+                "SELECT feedback_id, COALESCE(reason_text, ''), COALESCE(suggestion_text, '') " \
                 "FROM feedback " \
-                "WHERE sentiments IS NOT NULL;")
+                "WHERE status = false;")
             results = cursor.fetchall()
         print("INFO -- Input data extracted from feedback table.")  
 
         # Main loop
         outputs = {'feedback_id': [], 'text': [], 'sentiment': [], 'selected_text': [], 'timestamp': []}
-        for feedback_id, text in results:
-            timestamp = time.strftime('%Y%m%d-%H%M%Shrs')
+        for feedback_id, text, suggestion_text in results:
+            timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+            text = " ".join([text.strip(), suggestion_text.strip()])
             sentiment, selected_text = get_outputs(
                 text=text, 
                 polarity_tokenizer=tokenizer, 
@@ -101,16 +102,24 @@ if __name__ == '__main__':
             outputs['selected_text'].append(selected_text)
             outputs['timestamp'].append(timestamp)            
            
-            # Output
+            # Update status
             with connection.cursor() as cursor:
                 cursor.execute(
                     "UPDATE feedback " \
-                    "SET sentiment = %s, selected_text = %s , timestamp = %s" \
+                    "SET status = true " \
                     "WHERE feedback_id = %s;",
-                    (sentiment, selected_text, timestamp, feedback_id))
+                    (feedback_id,)
+                )
+
+            # Insert outputs into feedback_analysis_response table
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO feedback_analysis_response(feedback_analysis_response_id, sentiment, selected_text, timestamp) " \
+                    "VALUES (%s, %s, %s, %s);",
+                    (str(feedback_id), sentiment, selected_text, timestamp))
             
         connection.commit()
-        print("INFO -- Output updated in feedback table.")
+        print("INFO -- Output updated in feedback_analysis_response table.")
         with open('/opt/ml/processing/output/output.json', 'w') as f:
             json.dump(outputs, f, indent=4)
 

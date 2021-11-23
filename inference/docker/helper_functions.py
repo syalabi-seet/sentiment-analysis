@@ -1,3 +1,4 @@
+import regex as re
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
@@ -10,6 +11,9 @@ from tensorflow.keras.layers import (
 from transformers import (AutoConfig, TFAutoModelForSequenceClassification,
     TFAutoModelForQuestionAnswering)
 
+def clean_text(text):
+    text = text.lower()
+    return re.sub(r"[^a-zA-Z0-9,.'?! ]", '', text) # Remove all non-alphanumeric characters
 
 def PolarityTokenizer(text, tokenizer, max_length):
     """
@@ -92,6 +96,7 @@ def PhraseDecoder(input_ids, prediction, tokenizer):
 
 
 def get_outputs(text, polarity_tokenizer, phrase_tokenizer, polarity_model, phrase_model, POmax_len, QAmax_len):
+    text = clean_text(text)
     polarity_inputs = PolarityTokenizer(
         text=text,
         tokenizer=polarity_tokenizer,
