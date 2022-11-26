@@ -50,7 +50,26 @@ if __name__ == '__main__':
         "/opt/ml/processing/model/sentiment_models.tar.gz")
 
     with tarfile.open(model_path) as tar:
-        tar.extractall(path="/opt/ml/processing/model/")
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner=numeric_owner) 
+            
+        
+        safe_extract(tar, path="/opt/ml/processing/model/")
 
     polarity_model = PolarityModel(
         model_path='/opt/ml/processing/model/polarity_model.h5',
